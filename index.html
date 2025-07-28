@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Radar du Bien-être au Travail</title>
+    <meta name="description" content="Activité interactive d'évaluation du bien-être au travail">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .back-to-course {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .back-to-course:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .evaluation-panel, .radar-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .component {
+            margin-bottom: 20px;
+            padding: 18px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #4ECDC4;
+        }
+
+        .component h3 {
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .component p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .slider-container {
+            margin: 12px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4ECDC4;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4ECDC4;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .value-display {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #4ECDC4;
+            margin-top: 8px;
+        }
+
+        .radar-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #radarChart {
+            max-width: 350px;
+            max-height: 350px;
+        }
+
+        .score-summary {
+            margin-top: 15px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .overall-score {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4ECDC4;
+            margin: 8px 0;
+        }
+
+        .score-interpretation {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .score-excellent { background: #d4edda; color: #155724; }
+        .score-good { background: #d1ecf1; color: #0c5460; }
+        .score-average { background: #fff3cd; color: #856404; }
+        .score-poor { background: #f8d7da; color: #721c24; }
+
+        .recommendations {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .recommendations h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .recommendations ul {
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .recommendations li {
+            margin: 8px 0;
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: transform 0.2s;
+            margin: 8px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+
+        .completion-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .component {
+                padding: 15px;
+            }
+            
+            #radarChart {
+                max-width: 280px;
+                max-height: 280px;
+            }
+            
+            .back-to-course {
+                position: static;
+                display: inline-block;
+                margin-top: 10px;
+            }
+        }
+
+        /* Print styles for PDF export */
+        @media print {
+            body {
+                background: white;
+            }
+            .btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header" style="position: relative;">
+            <a href="#" class="back-to-course" onclick="window.close(); return false;">← Retour au cours</a>
+            <h1>📊 Mon Radar du Bien-être au Travail</h1>
+            <p>Évaluez chaque composante et visualisez votre profil en temps réel</p>
+        </header>
+
+        <div class="completion-message" id="completionMessage">
+            🎉 <strong>Félicitations !</strong> Vous avez complété votre évaluation. Analysez vos résultats ci-dessous et notez vos priorités d'amélioration.
+        </div>
+
+        <div class="content">
+            <div class="evaluation-panel">
+                <h2 style="text-align: center; margin-bottom: 25px; color: #2c3e50;">🎯 Évaluez votre situation</h2>
+                
+                <!-- Components remain the same as previous version -->
+                <div class="component">
+                    <h3>🏢 Environnement Physique</h3>
+                    <p>Espace de travail, ergonomie, éclairage, bruit, confort général</p>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="10" value="5" class="slider" id="environment">
+                        <div class="slider-labels">
+                            <span>Très mauvais</span>
+                            <span>Excellent</span>
+                        </div>
+                        <div class="value-display" id="environment-value">5/10</div>
+                    </div>
+                </div>
+
+                <div class="component">
+                    <h3>👥 Relations Humaines</h3>
+                    <p>Collègues, hiérarchie, communication, esprit d'équipe</p>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="10" value="5" class="slider" id="relations">
+                        <div class="slider-labels">
+                            <span>Relations toxiques</span>
+                            <span>Relations excellentes</span>
+                        </div>
+                        <div class="value-display" id="relations-value">5/10</div>
+                    </div>
+                </div>
+
+                <div class="component">
+                    <h3>⚖️ Équilibre Vie Pro/Perso</h3>
+                    <p>Horaires, flexibilité, télétravail, respect du temps personnel</p>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="10" value="5" class="slider" id="balance">
+                        <div class="slider-labels">
+                            <span>Déséquilibre total</span>
+                            <span>Équilibre parfait</span>
+                        </div>
+                        <div class="value-display" id="balance-value">5/10</div>
+                    </div>
+                </div>
+
+                <div class="component">
+                    <h3>🎯 Sens & Purpose</h3>
+                    <p>Valeurs, impact, contribution, fierté du travail</p>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="10" value="5" class="slider" id="purpose">
+                        <div class="slider-labels">
+                            <span>Aucun sens</span>
+                            <span>Très inspirant</span>
+                        </div>
+                        <div class="value-display" id="purpose-value">5/10</div>
+                    </div>
+                </div>
+
+                <div class="component">
+                    <h3>📈 Développement Professionnel</h3>
+                    <p>Formation, évolution, défis, autonomie, apprentissage</p>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="10" value="5" class="slider" id="development">
+                        <div class="slider-labels">
+                            <span>Stagnation</span>
+                            <span>Croissance continue</span>
+                        </div>
+                        <div class="value-display" id="development-value">5/10</div>
+                    </div>
+                </div>
+
+                <div class="component">
+                    <h3>💰 Sécurité & Reconnaissance</h3>
+                    <p>Salaire, avantages, stabilité, reconnaissance</p>
+                    <div class="slider-container">
+                        <input type="range" min="1" max="10" value="5" class="slider" id="security">
+                        <div class="slider-labels">
+                            <span>Très insécure</span>
+                            <span>Très sécurisé</span>
+                        </div>
+                        <div class="value-display" id="security-value">5/10</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="radar-panel">
+                <h2 style="color: #2c3e50; margin-bottom: 15px;">📊 Votre Profil Radar</h2>
+                <canvas id="radarChart" width="350" height="350"></canvas>
+                
+                <div class="score-summary">
+                    <div class="overall-score" id="overallScore">50/100</div>
+                    <div id="scoreInterpretation" class="score-interpretation score-average">
+                        Score moyen - Des améliorations sont possibles
+                    </div>
+                </div>
+
+                <div class="recommendations" id="recommendations">
+                    <h4>💡 Recommandations personnalisées :</h4>
+                    <ul id="recommendationsList">
+                        <li>Bougez les curseurs pour voir des recommandations personnalisées</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn" onclick="saveProfile()">💾 Télécharger mon Profil</button>
+                    <button class="btn reset-btn" onclick="resetAll()">🔄 Recommencer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Same JavaScript as before, but with completion tracking
+        const canvas = document.getElementById('radarChart');
+        const ctx = canvas.getContext('2d');
+        
+        const components = [
+            { id: 'environment', label: 'Environnement\nPhysique', angle: 0 },
+            { id: 'relations', label: 'Relations\nHumaines', angle: Math.PI / 3 },
+            { id: 'balance', label: 'Équilibre\nVie Pro/Perso', angle: 2 * Math.PI / 3 },
+            { id: 'purpose', label: 'Sens &\nPurpose', angle: Math.PI },
+            { id: 'development', label: 'Développement\nProfessionnel', angle: 4 * Math.PI / 3 },
+            { id: 'security', label: 'Sécurité &\nReconnaissance', angle: 5 * Math.PI / 3 }
+        ];
+
+        let values = {
+            environment: 5,
+            relations: 5,
+            balance: 5,
+            purpose: 5,
+            development: 5,
+            security: 5
+        };
+
+        let userHasInteracted = false;
+
+        function drawRadarChart() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const maxRadius = 130;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Background circles
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 1; i <= 5; i++) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, (maxRadius / 5) * i, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+            
+            // Axis lines
+            ctx.strokeStyle = '#d0d0d0';
+            components.forEach(component => {
+                const x = centerX + Math.cos(component.angle - Math.PI/2) * maxRadius;
+                const y = centerY + Math.sin(component.angle - Math.PI/2) * maxRadius;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            });
+            
+            // Labels
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 10px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            components.forEach(component => {
+                const labelRadius = maxRadius + 25;
+                const x = centerX + Math.cos(component.angle - Math.PI/2) * labelRadius;
+                const y = centerY + Math.sin(component.angle - Math.PI/2) * labelRadius;
+                
+                const lines = component.label.split('\n');
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, x, y + (index - 0.5) * 12);
+                });
+            });
+            
+            // Data polygon
+            ctx.strokeStyle = '#4ECDC4';
+            ctx.fillStyle = 'rgba(78, 205, 196, 0.3)';
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            components.forEach((component, index) => {
+                const value = values[component.id];
+                const radius = (value / 10) * maxRadius;
+                const x = centerX + Math.cos(component.angle - Math.PI/2) * radius;
+                const y = centerY + Math.sin(component.angle - Math.PI/2) * radius;
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Data points
+            ctx.fillStyle = '#FF6B6B';
+            components.forEach(component => {
+                const value = values[component.id];
+                const radius = (value / 10) * maxRadius;
+                const x = centerX + Math.cos(component.angle - Math.PI/2) * radius;
+                const y = centerY + Math.sin(component.angle - Math.PI/2) * radius;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        function updateValue(componentId, value) {
+            values[componentId] = parseInt(value);
+            document.getElementById(componentId + '-value').textContent = value + '/10';
+            drawRadarChart();
+            updateOverallScore();
+            updateRecommendations();
+            
+            if (!userHasInteracted) {
+                userHasInteracted = true;
+                document.getElementById('completionMessage').style.display = 'block';
+            }
+        }
+
+        function updateOverallScore() {
+            const total = Object.values(values).reduce((sum, val) => sum + val, 0);
+            const percentage = Math.round((total / 60) * 100);
+            
+            document.getElementById('overallScore').textContent = percentage + '/100';
+            
+            const interpretation = document.getElementById('scoreInterpretation');
+            if (percentage >= 85) {
+                interpretation.className = 'score-interpretation score-excellent';
+                interpretation.textContent = '🌟 Excellent ! Votre bien-être au travail est optimal';
+            } else if (percentage >= 70) {
+                interpretation.className = 'score-interpretation score-good';
+                interpretation.textContent = '👍 Bon niveau de bien-être avec quelques axes d\'amélioration';
+            } else if (percentage >= 50) {
+                interpretation.className = 'score-interpretation score-average';
+                interpretation.textContent = '⚠️ Bien-être moyen - Des améliorations importantes sont nécessaires';
+            } else {
+                interpretation.className = 'score-interpretation score-poor';
+                interpretation.textContent = '🚨 Attention ! Votre bien-être au travail nécessite une action urgente';
+            }
+        }
+
+        function updateRecommendations() {
+            const recommendations = [];
+            const sortedValues = Object.entries(values)
+                .sort((a, b) => a[1] - b[1])
+                .slice(0, 3);
+            
+            const componentNames = {
+                environment: 'Environnement Physique',
+                relations: 'Relations Humaines',
+                balance: 'Équilibre Vie Pro/Perso',
+                purpose: 'Sens & Purpose',
+                development: 'Développement Professionnel',
+                security: 'Sécurité & Reconnaissance'
+            };
+
+            const actionPlans = {
+                environment: 'Demandez un aménagement ergonomique ou explorez les espaces de coworking',
+                relations: 'Proposez des activités d\'équipe ou sollicitez un feedback avec votre manager',
+                balance: 'Négociez du télétravail ou établissez des limites claires sur vos horaires',
+                purpose: 'Identifiez l\'impact de votre travail ou explorez des projets alignés avec vos valeurs',
+                development: 'Demandez un plan de formation ou proposez de nouveaux défis',
+                security: 'Préparez une négociation salariale ou explorez les opportunités internes'
+            };
+
+            sortedValues.forEach(([component, value]) => {
+                if (value <= 6) {
+                    recommendations.push(`<strong>${componentNames[component]}</strong> (${value}/10): ${actionPlans[component]}`);
+                }
+            });
+
+            const list = document.getElementById('recommendationsList');
+            if (recommendations.length > 0) {
+                list.innerHTML = recommendations.map(rec => `<li>${rec}</li>`).join('');
+            } else {
+                list.innerHTML = '<li style="color: #28a745;">🎉 Excellent ! Continuez sur cette lancée !</li>';
+            }
+        }
+
+        // Event listeners
+        document.querySelectorAll('.slider').forEach(slider => {
+            slider.addEventListener('input', function() {
+                updateValue(this.id, this.value);
+            });
+        });
+
+        function saveProfile() {
+            const profileData = {
+                date: new Date().toLocaleDateString('fr-FR'),
+                values: values,
+                overallScore: Math.round((Object.values(values).reduce((sum, val) => sum + val, 0) / 60) * 100)
+            };
+            
+            const dataStr = `Mon Profil Bien-être au Travail - ${profileData.date}\n\nScore global: ${profileData.overallScore}/100\n\nDétail par composante:\n${Object.entries(values).map(([key, value]) => `${key}: ${value}/10`).join('\n')}`;
+            
+            const blob = new Blob([dataStr], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'profil-bien-etre-travail.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function resetAll() {
+            if (confirm('Êtes-vous sûr de vouloir recommencer l\'évaluation ?')) {
+                Object.keys(values).forEach(key => {
+                    values[key] = 5;
+                    document.getElementById(key).value = 5;
+                    document.getElementById(key + '-value').textContent = '5/10';
+                });
+                userHasInteracted = false;
+                document.getElementById('completionMessage').style.display = 'none';
+                drawRadarChart();
+                updateOverallScore();
+                updateRecommendations();
+            }
+        }
+
+        // Initialize
+        drawRadarChart();
+        updateOverallScore();
+        updateRecommendations();
+
+        // Track completion for analytics (if needed)
+        window.addEventListener('beforeunload', function() {
+            if (userHasInteracted) {
+                // Could send completion data to analytics here
+                console.log('User completed radar assessment');
+            }
+        });
+    </script>
+</body>
+</html>
